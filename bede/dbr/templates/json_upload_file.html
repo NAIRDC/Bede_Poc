@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload JSON File</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: auto; }
+        input[type="file"] { margin-bottom: 15px; }
+        button { padding: 10px 20px; font-size: 16px; }
+        .result-card {
+            margin-top: 30px;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .result-card h3 { margin-bottom: 15px; }
+        .field { margin-bottom: 10px; }
+        .label { font-weight: bold; }
+        .messages {
+            margin-bottom: 20px;
+        }
+        .messages .error {
+            color: #b71c1c;
+            background-color: #ffcdd2;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .messages .success {
+            color: #1b5e20;
+            background-color: #c8e6c9;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .messages .info {
+            color: #0d47a1;
+            background-color: #bbdefb;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Upload User JSON File</h1>
+
+    <div class="messages">
+        {% for message in messages %}
+            <div class="{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Process File</button>
+    </form>
+
+    {% if user_info %}
+        <div class="result-card">
+            <h3>User Info</h3>
+            {% for key, value in user_info.items %}
+                <div class="field">
+                    <span class="label">{{ key }}:</span> {{ value }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if dbr_info %}
+        <div class="result-card">
+            <h3>DBR Details</h3>
+            {% for key, value in dbr_info.items %}
+                <div class="field">
+                    <span class="label">{{ key }}:</span> {{ value }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</body>
+</html>
