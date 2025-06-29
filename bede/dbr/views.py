@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from .forms import JsonFileUploadForm
 from .models import BCRBReport
-from .scripts.dbr_calculator import calculate_dbr_from_json
+from .util.dbr_calculator import calculate_dbr_from_json
 from .models import User, BCRBReport, BCRBAccount
 from datetime import datetime
 from django.utils import timezone
