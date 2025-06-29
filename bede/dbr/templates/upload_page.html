@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Files - Bede</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bede-pink: #F9D7E2;
+            --bede-pink-darker: #E87A95;
+            --bede-dark: #111827;
+            --font-heading: 'Outfit', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+        body {
+            font-family: var(--font-body);
+            background-color: #f8fafc; /* bg-slate-50 */
+        }
+        .font-heading { font-family: var(--font-heading); }
+        .sidebar-icon { stroke-width: 2; }
+        .sidebar-item a {
+             color: #475569; /* slate-600 */
+        }
+        .sidebar-item.sidebar-active a {
+            background-color: var(--bede-pink);
+            color: var(--bede-dark);
+            font-weight: 600;
+        }
+        .sidebar-item.sidebar-active svg { color: var(--bede-dark); }
+       
+        /* Upload Page Styles */
+        .upload-area {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 2.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+        .upload-area:hover, .upload-area.dragover {
+            background-color: #f1f5f9;
+            border-color: var(--bede-pink-darker);
+        }
+        .summary-card-compact {
+            background-color: white;
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0; /* slate-200 */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+<div class="relative min-h-screen md:flex">
+    <!-- Mobile menu button -->
+    <div class="md:hidden flex justify-between items-center bg-white p-4 border-b border-slate-200">
+        <div>
+            <img src="https://placehold.co/120x40/000000/FFFFFF?text=Logo" alt="Logo" class="h-8">
+        </div>
+        <button id="mobile-menu-btn" class="text-slate-500 hover:text-slate-800">
+            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-64 bg-white border-r border-slate-200 flex flex-col flex-shrink-0 fixed inset-y-0 left-0 z-30 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-200 ease-in-out">
+        <!-- Logo and Nav container -->
+        <div class="flex flex-col flex-grow">
+            <!-- Logo -->
+            <div class="h-20 flex items-center justify-center border-b border-slate-200 flex-shrink-0">
+                <img src="https://placehold.co/140x50/000000/FFFFFF?text=Logo" alt="Logo" class="h-10">
+            </div>
+            <!-- Navigation -->
+            <nav id="sidebar-nav" class="flex-grow pt-6 space-y-2 px-4">
+                <div class="sidebar-item" data-page="dashboard-page">
+                    <a href="" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg text-slate-500 hover:bg-slate-100">
+                        <svg class="h-6 w-6 sidebar-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+                <div class="sidebar-item sidebar-active" data-page="upload-page">
+                    <a href="{% url 'upload_json' %}" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg text-slate-700">
+                        <svg class="h-6 w-6 sidebar-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
+                        <span>Upload Files</span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+
+        <!-- User/Logout -->
+        <div class="p-4 border-t border-slate-200 flex-shrink-0">
+            <a href="#" class="flex items-center space-x-3 p-2 rounded-lg text-slate-500 hover:bg-slate-100">
+                <img class="h-10 w-10 rounded-full" src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="User avatar">
+                <div class="flex-grow">
+                    <p class="text-sm font-semibold text-slate-700">Jane Doe</p>
+                    <p class="text-xs text-slate-500">Log Out</p>
+                </div>
+                <svg class="h-6 w-6 sidebar-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" /></svg>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content: Upload Page -->
+    <main id="upload-page" class="flex-1 p-6 lg:p-10 overflow-y-auto">
+        <header>
+            <h1 class="font-heading text-3xl font-bold text-slate-800">Process New Files</h1>
+            <p class="mt-1 text-slate-500">Upload one or more JSON files to check DBR and view account details.</p>
+        </header>
+
+        <!-- Upload Section -->
+        <section id="upload-section" class="mt-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <input type="file" id="file-upload-input" multiple accept=".json" class="hidden">
+                <label for="file-upload-input" id="upload-area-label" class="upload-area flex flex-col items-center justify-center text-slate-500">
+                    <svg class="h-12 w-12 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
+                    </svg>
+                    <p class="font-semibold text-slate-700">Click to browse or drag and drop files</p>
+                    <p class="text-sm">JSON files only</p>
+                </label>
+
+                <!-- Files to be uploaded list -->
+                <div id="file-list-container" class="mt-6 hidden">
+                    <h3 class="font-heading text-lg font-semibold text-slate-700 mb-2">Selected Files</h3>
+                    <div id="file-list" class="space-y-2"></div>
+                    <div class="mt-6 flex justify-end">
+                        <button id="process-files-btn" class="px-6 py-2.5 rounded-lg text-white font-semibold transition-all" style="background-color: var(--bede-dark);" disabled>
+                            Process Files
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section id="results-section" class="mt-8 hidden">
+             <h2 class="font-heading text-xl font-semibold text-slate-700 mb-4">Processing Results</h2>
+             <div id="results-container" class="space-y-8">
+                <!-- Dynamic result cards will be injected here -->
+             </div>
+        </section>
+
+    </main>
+</div>
+
+
+<script>
+/* -------------------------- helpers -------------------------- */
+function getCookie(name) {
+  return document.cookie
+      .split(";")
+      .map(c => c.trim())
+      .find(c => c.startsWith(name + "="))
+      ?.split("=")[1];
+}
+
+/* ------------------------ app state -------------------------- */
+let uploadedFiles = [];
+
+/* --------------------- DOM references ------------------------ */
+const fileInput        = document.getElementById("file-upload-input");
+const uploadLabel      = document.getElementById("upload-area-label");
+const fileListBox      = document.getElementById("file-list-container");
+const fileListEl       = document.getElementById("file-list");
+const processBtn       = document.getElementById("process-files-btn");
+const resultsSection   = document.getElementById("results-section");
+const resultsContainer = document.getElementById("results-container");
+
+/* --------------------- drag / drop --------------------------- */
+["dragenter","dragover","dragleave","drop"].forEach(ev=>{
+  uploadLabel.addEventListener(ev,e=>{e.preventDefault();e.stopPropagation();});
+});
+["dragenter","dragover"].forEach(ev=>{
+  uploadLabel.addEventListener(ev,()=>uploadLabel.classList.add("dragover"));
+});
+["dragleave","drop"].forEach(ev=>{
+  uploadLabel.addEventListener(ev,()=>uploadLabel.classList.remove("dragover"));
+});
+uploadLabel.addEventListener("drop",handleSelect);
+fileInput  .addEventListener("change",handleSelect);
+
+function handleSelect(e){
+  let files = e.type==="drop" ? e.dataTransfer.files : e.target.files;
+  [...files].filter(f=>f.type==="application/json").forEach(f=>{
+    if(!uploadedFiles.find(u=>u.name===f.name && u.lastModified===f.lastModified))
+      uploadedFiles.push(f);
+  });
+  renderFileList();
+}
+
+function renderFileList(){
+  fileListEl.innerHTML="";
+  if(uploadedFiles.length){
+    fileListBox.classList.remove("hidden");
+    processBtn.disabled=false;
+    uploadedFiles.forEach((f,i)=>{
+      const row=document.createElement("div");
+      row.className="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-200";
+      row.innerHTML=`
+        <div class="flex items-center space-x-3">
+          <svg class="h-6 w-6 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12.75h7.5" /></svg>
+          <div>
+            <p class="font-medium text-slate-700 text-sm">${f.name}</p>
+            <p class="text-xs text-slate-500">${(f.size/1024).toFixed(1)} KB</p>
+          </div>
+        </div>
+        <button data-idx="${i}" class="remove-file-btn p-1 text-slate-400 hover:text-red-600">
+          <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>`;
+      fileListEl.appendChild(row);
+    });
+    document.querySelectorAll(".remove-file-btn").forEach(btn=>{
+      btn.addEventListener("click",e=>{
+        uploadedFiles.splice(+e.currentTarget.dataset.idx,1);
+        renderFileList();
+      });
+    });
+  }else{
+    fileListBox.classList.add("hidden");
+    processBtn.disabled=true;
+  }
+}
+
+/* --------------------- submission ---------------------------- */
+processBtn.addEventListener("click",async()=>{
+  if(!uploadedFiles.length) return;
+  processBtn.disabled=true;
+  processBtn.innerHTML=`<svg class="animate-spin h-5 w-5 text-white mr-2 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Processing…`;
+
+  const fd=new FormData();
+  uploadedFiles.forEach(f=>fd.append("files",f));
+  const res=await fetch("{% url 'upload_json' %}",{
+    method:"POST",
+    headers:{"X-CSRFToken":getCookie("csrftoken")},
+    body:fd
+  });
+  const data=await res.json();
+  resultsContainer.innerHTML="";
+  (data.results||[]).forEach(renderCard);
+  if(data.errors?.length){
+    alert("Some files failed:\n"+data.errors.map(e=>`${e.file}: ${e.error}`).join("\n"));
+  }
+  resultsSection.classList.remove("hidden");
+  uploadedFiles=[];
+  renderFileList();
+  processBtn.disabled=false;
+  processBtn.textContent="Process Files";
+});
+
+function statusBadge(status){
+  const cfg = status === "new"
+      ? { bg:"bg-sky-100", txt:"text-sky-600", label:"Stored in DB" }
+      : { bg:"bg-amber-100", txt:"text-amber-600", label:"Already in DB" };
+  return `<span class="px-2 py-0.5 rounded text-xs font-medium ${cfg.bg} ${cfg.txt}">${cfg.label}</span>`;
+}
+
+
+/* -------------------- card renderer -------------------------- */
+function renderCard(d){
+  const wrap=document.createElement("div");
+  wrap.className="bg-white p-6 rounded-xl shadow-sm border border-slate-200";
+
+  const decColor=d.decision==="Accepted"?"text-green-600":"text-red-600";
+  const decBg   =d.decision==="Accepted"?"bg-green-100":"bg-red-100";
+
+  /* ── quick aggregations ── */
+  const openAccounts   = d.accounts.filter(a=>a.position==="Open").length;
+  const totalOutstanding =
+        d.accounts.reduce((s,a)=>s+(parseFloat(a.outstanding)||0),0).toFixed(2);
+
+  const reasonList = d.reasons.length
+      ? `<ul class="list-disc ml-6 space-y-1 text-sm text-slate-600">
+            ${d.reasons.map(r=>`<li>${r}</li>`).join("")}
+         </ul>`
+      : `<p class="text-sm text-slate-500">No specific reasons provided.</p>`;
+
+  wrap.innerHTML=`
+    <div class="flex flex-wrap justify-between items-center pb-4 border-b border-slate-200">
+        <h3 class="font-heading text-lg font-semibold text-slate-800">
+            File: <span class="font-normal">${d.file_name}</span>
+        </h3>
+        ${statusBadge(d.status)}
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6 pt-4">
+        <div>
+          <h4 class="font-semibold text-slate-700 mb-2">Personal Details</h4>
+          <div class="space-y-2 text-sm">
+            <p><strong>Name:</strong> ${d.user.full_name}</p>
+            <p><strong>ID:</strong> ${d.user.passport_number}</p>
+            <p><strong>Nationality:</strong> ${d.user.nationality}</p>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="font-semibold text-slate-700 mb-2">DSR Details</h4>
+          <div class="space-y-2 text-sm">
+            <p><strong>Decision:</strong>
+               <span class="font-bold px-2 py-0.5 rounded ${decBg} ${decColor}">
+                   ${d.decision}
+               </span></p>
+            <p><strong>DBR %:</strong> ${(d.dbr_percent*100).toFixed(1)}%</p>
+            <p><strong>Score:</strong> ${d.score ?? "N/A"}</p>
+            <p><strong>Gross Salary:</strong>
+               ${Number(d.gross_salary).toLocaleString("en-US",{minimumFractionDigits:2})}
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="font-semibold text-slate-700 mb-2">Last Updated</h4>
+          <p class="text-sm text-slate-500">${d.last_fetched}</p>
+          <h4 class="font-semibold text-slate-700 mb-1">Score Reasons</h4>
+          ${reasonList}
+      </div>
+    </div>
+
+    <!-- ── Outstanding Summary ── -->
+    <hr class="my-6">
+    <h4 class="font-heading text-lg font-semibold text-slate-800 mb-4">
+        Outstanding Summary
+    </h4>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      ${summaryCard('Number Open',   openAccounts)}
+      ${summaryCard('Total Accounts',d.accounts.length)}
+      ${summaryCard('Total Outstanding', totalOutstanding)}
+      ${summaryCard('Open %',(openAccounts/d.accounts.length*100||0).toFixed(1)+"%")}
+    </div>
+
+    <!-- ── Account list ── -->
+    <div class="bg-slate-100 p-3 rounded-t-lg grid grid-cols-3 gap-4
+                text-sm font-semibold text-slate-600">
+        <div>Loan Type</div><div class="text-right">Outstanding</div>
+        <div class="text-right">Payment Type</div>
+    </div>
+    <div class="border border-slate-200 rounded-b-lg">
+      ${
+        d.accounts.length
+        ? d.accounts.map(a=>`
+            <div class="grid grid-cols-3 gap-4 p-3 border-b border-slate-200
+                        last:border-b-0 text-sm text-slate-700">
+              <div>${a.type}</div>
+              <div class="text-right font-medium">
+                 ${Number(a.outstanding).toLocaleString("en-US",{minimumFractionDigits:2})}
+              </div>
+              <div class="text-right">${a.payment_type}</div>
+            </div>`).join("")
+        : `<p class="text-center p-4 text-slate-500">
+             No account details found for this report.
+           </p>`
+      }
+    </div>
+  `;
+
+  resultsContainer.appendChild(wrap);
+}
+
+/* helper for the four small boxes */
+function summaryCard(label,val){
+  return `
+    <div class="summary-card-compact">
+      <p class="text-xs text-slate-500">${label}</p>
+      <p class="text-base font-bold text-slate-800">${val}</p>
+    </div>`;
+}
+</script>
+</body>
+</html>

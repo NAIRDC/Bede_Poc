@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Bede</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Custom properties for theme colors and fonts */
+        :root {
+            --bede-pink: #F9D7E2;
+            --bede-pink-darker: #E87A95;
+            --bede-dark: #111827; /* A slightly softer black */
+            --font-heading: 'Outfit', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        /* Use Inter as the default body font */
+        body {
+            font-family: var(--font-body);
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Style for the main heading */
+        .heading-font {
+            font-family: var(--font-heading);
+            font-weight: 800;
+        }
+
+        /* The pink highlight effect for the heading text */
+        .text-highlight {
+            background-color: var(--bede-pink);
+            padding: 0.1em 0.25em;
+            line-height: 1.5; /* Adjust line height for better background fit */
+            border-radius: 6px;
+        }
+
+        /* Custom styling for input fields */
+        .custom-input {
+            border-radius: 14px;
+            background-color: #f3f4f6; /* bg-gray-100 */
+            border: 2px solid transparent;
+            padding: 0.85rem 1rem;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .custom-input:focus {
+            border-color: var(--bede-pink-darker);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(232, 122, 149, 0.2);
+        }
+
+        /* Main content should grow to push footer down */
+        .main-content {
+            flex-grow: 1;
+        }
+    </style>
+</head>
+<body class="bg-white">
+
+    <!-- Header for logos -->
+    <header class="absolute top-0 left-0 right-0 w-full p-4 sm:p-6">
+        <div class="container flex items-center justify-between mx-auto">
+            <!-- Left Logo -->
+            <img src="https://placehold.co/120x50/000000/FFFFFF?text=Logo" alt="Placeholder Logo Left" class="h-8 sm:h-10">
+            <!-- Right Logo -->
+            <img src="https://placehold.co/120x50/EEE/000000?text=Logo" alt="Placeholder Logo Right" class="h-8 sm:h-10">
+        </div>
+    </header>
+
+    <!-- Main container -->
+<main class="flex items-center justify-center w-full main-content px-4 py-12">
+  <div class="w-full max-w-md space-y-8 mt-20 sm:mt-0">
+    <div class="text-left">
+      <h1 class="text-4xl leading-tight tracking-tight text-gray-900 heading-font sm:text-5xl">
+        Log in to start <br> your <span class="text-highlight">Journey</span>
+      </h1>
+      <p class="mt-4 text-gray-500">Enter your details below to continue.</p>
+    </div>
+
+    <form method="post" action="{% url 'login' %}" class="mt-8 space-y-6">
+      {% csrf_token %}
+
+      <!-- Username / password -->
+      <div class="space-y-4">
+        <div>{{ form.username }}</div>
+        <div>{{ form.password }}</div>
+      </div>
+
+      <!-- Error messages -->
+      {% if form.non_field_errors %}
+        <p class="text-red-600 text-sm">{{ form.non_field_errors.0 }}</p>
+      {% endif %}
+
+      <!-- Submit -->
+      <div>
+        <button type="submit"
+          class="relative flex justify-center w-full px-4 py-3 text-sm font-semibold text-white
+                 border border-transparent rounded-full focus:outline-none focus:ring-2
+                 focus:ring-offset-2 focus:ring-gray-800 transition-transform duration-200
+                 ease-in-out hover:scale-105"
+          style="background-color: var(--bede-dark);">
+          Sign In
+        </button>
+      </div>
+
+      <div class="text-sm text-center text-gray-500">
+        Don’t have an account?
+        <span class="font-medium" style="color: var(--bede-pink-darker);">Sign up here</span>
+      </div>
+    </form>
+  </div>
+</main>
+
+<footer class="w-full py-6 text-center">
+  <p class="text-sm text-gray-500">© NAIRDC 2025 – All rights reserved.</p>
+</footer>
+
+</body>
+</html>
