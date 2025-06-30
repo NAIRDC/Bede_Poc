@@ -89,3 +89,49 @@ def save_user_from_json(json_data):
     )
 
     return user
+
+
+def _build_result_dict(report, user, status):
+    """
+    Builds a dictionary with processed report data for the frontend.
+    status = "new"      → file just stored in DB
+           = "existing"  → file was already there
+    """
+    reasons = [
+        r for r in (
+            report.score_reason1,
+            report.score_reason2,
+            report.score_reason3
+        ) if r  # skip None / empty
+    ]
+    return {
+        "file_name": f"{report.report_id}.json",
+        "status": status,
+        "reasons": reasons,
+        "decision": report.decision,
+        "dbr_percent": report.dbr_percent,
+        "score": report.score_online,
+        "gross_salary": report.gross_salary,
+        "last_fetched": report.fetching_date.strftime("%Y-%m-%d %H:%M"),
+        "user": {
+            "full_name": f"{user.first_name_en} {user.middle_name2_en or ''}".strip(),
+            "gender": user.gender,
+            "nationality": user.nationality,
+            "passport_number": user.passport_number,
+            "date_of_birth": user.date_of_birth,
+            "occupation": user.occupation,
+            "employment_status": user.employment_status,
+            "employer": user.name_of_employer,
+            "marital_status": user.marital_status,
+            "mobile": user.telephone_number,
+        },
+        "accounts": [
+            {
+                "type": a.account_type,
+                "position": a.account_position,
+                "outstanding": a.outstanding_balance or 0.0,
+                "payment_type": a.payment_frequency,
+            }
+            for a in BCRBAccount.objects.filter(report=report)
+        ],
+    }

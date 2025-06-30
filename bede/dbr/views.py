@@ -1,19 +1,14 @@
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
-from dbr.util.json_process import save_bcrb_report_from_json, save_user_from_json
+from dbr.util.json_process import _build_result_dict, save_bcrb_report_from_json, save_user_from_json
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib import messages
 
 from .forms import JsonFileUploadForm, LoginForm
-from .models import BCRBReport
 from .models import Customer, BCRBReport, BCRBAccount,UserActivity,CustomUser
 import json
 from django.utils import timezone # Import timezone
 
-MAX_FAILED_ATTEMPTS = 5
-HARDCODED_USERNAME = "test1"
-HARDCODED_PASSWORD = "nairdc123"
 
 def login_view(request):
     """
@@ -28,20 +23,18 @@ def login_view(request):
         if form.is_valid():
             username = form.cleaned_data["username"]
             password = form.cleaned_data["password"]
-
-            # --- NEW LOGIC: CHECK FOR LOCKOUT FIRST ---
             try:
                 user_account = CustomUser.objects.get(username__iexact=username)
                 # Check if the account is locked
                 if user_account.lockout_until and user_account.lockout_until > timezone.now():
                     # Store the lockout time in the session to display on the locked page
                     request.session['lockout_until'] = user_account.lockout_until.isoformat()
+                    UserActivity.objects.create(user=user_account, activity="Failed login attempt: Account locked",details=f"Attempted login while account is locked until {user_account.lockout_until.isoformat()}")
+
                     return redirect('locked') # Redirect to the new locked_view
             except CustomUser.DoesNotExist:
                 # User does not exist, fall through to the normal authentication failure
                 pass
-            # --- END OF NEW LOGIC ---
-
             # If the account wasn't locked, proceed with authentication
             user = authenticate(request, username=username, password=password)
 
@@ -96,51 +89,6 @@ def dashboard(request):
     return render(request, 'dashboard.html', {'activities': activities})
 
 
-
-def _build_result_dict(report, user, status):
-    """
-    Builds a dictionary with processed report data for the frontend.
-    status = "new"      → file just stored in DB
-           = "existing"  → file was already there
-    """
-    reasons = [
-        r for r in (
-            report.score_reason1,
-            report.score_reason2,
-            report.score_reason3
-        ) if r  # skip None / empty
-    ]
-    return {
-        "file_name": f"{report.report_id}.json",
-        "status": status,
-        "reasons": reasons,
-        "decision": report.decision,
-        "dbr_percent": report.dbr_percent,
-        "score": report.score_online,
-        "gross_salary": report.gross_salary,
-        "last_fetched": report.fetching_date.strftime("%Y-%m-%d %H:%M"),
-        "user": {
-            "full_name": f"{user.first_name_en} {user.middle_name2_en or ''}".strip(),
-            "gender": user.gender,
-            "nationality": user.nationality,
-            "passport_number": user.passport_number,
-            "date_of_birth": user.date_of_birth,
-            "occupation": user.occupation,
-            "employment_status": user.employment_status,
-            "employer": user.name_of_employer,
-            "marital_status": user.marital_status,
-            "mobile": user.telephone_number,
-        },
-        "accounts": [
-            {
-                "type": a.account_type,
-                "position": a.account_position,
-                "outstanding": a.outstanding_balance or 0.0,
-                "payment_type": a.payment_frequency,
-            }
-            for a in BCRBAccount.objects.filter(report=report)
-        ],
-    }
 @login_required(login_url='login')
 def json_upload_view(request):
     if request.method == "GET":
@@ -185,6 +133,7 @@ def json_upload_view(request):
     
     return JsonResponse({"results": results, "errors": errors})
 
+@login_required(login_url='login')
 def api_users(request):
     # Return a list of all users
     users = Customer.objects.all().values(
@@ -200,6 +149,7 @@ def api_users(request):
     )
     return JsonResponse(list(users), safe=False)
 
+@login_required(login_url='login')
 def api_reports(request, user_id):
     # Return all reports for a given user
     reports = BCRBReport.objects.filter(user_id=user_id).values(
@@ -209,6 +159,7 @@ def api_reports(request, user_id):
     )
     return JsonResponse(list(reports), safe=False)
 
+@login_required(login_url='login')
 def api_accounts(request, report_id):
     # Return all account-details for a given report
     accounts = BCRBAccount.objects.filter(report_id=report_id).values(
