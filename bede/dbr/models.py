@@ -1,7 +1,9 @@
 # models.py
+from django.conf import settings
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
-class User(models.Model):
+class Customer(models.Model):
     id_number = models.CharField(max_length=20, unique=True)
     first_name_en = models.CharField(max_length=100, blank=True)
     middle_name1_en = models.CharField(max_length=100, blank=True)
@@ -46,12 +48,10 @@ class User(models.Model):
     passport_number = models.CharField(max_length=50, blank=True)
     passport_expiry_date = models.CharField(max_length=20, blank=True)
 
-   
-
     created_at = models.DateTimeField(auto_now_add=True)
 
 class BCRBReport(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reports')
+    user = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='reports')
     report_id = models.CharField(max_length=100, primary_key=True)
     uid = models.CharField(max_length=100)
     score_online = models.IntegerField(null=True)
@@ -62,6 +62,7 @@ class BCRBReport(models.Model):
     fetching_date = models.DateTimeField(null=True)
     decision = models.CharField(max_length=20, null=True)
     dbr_percent = models.FloatField(null=True)
+    
 
 class BCRBAccount(models.Model):
     report = models.ForeignKey(BCRBReport, on_delete=models.CASCADE)
@@ -75,3 +76,25 @@ class BCRBAccount(models.Model):
 
     def __str__(self):
         return f"{self.first_name_en} {self.middle_name2_en or ''} ({self.id_number})"
+
+
+class CustomUser(AbstractUser):
+    """
+    Custom user model to add login attempt tracking and lockout functionality.
+    Password hashing is handled automatically by Django's AbstractUser.
+    """
+    login_attempts = models.IntegerField(default=0)
+    lockout_until = models.DateTimeField(null=True, blank=True)
+
+class UserActivity(models.Model):
+    """
+    Model to log user activities like login, logout, and file uploads.
+    """
+    # Use settings.AUTH_USER_MODEL to create a flexible link to your CustomUser
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    activity = models.CharField(max_length=255)
+    details = models.TextField(blank=True, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.activity} at {self.timestamp.strftime('%Y-%m-%d %H:%M')}"

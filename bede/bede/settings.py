@@ -106,6 +106,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'dbr.CustomUser'
+
+AUTHENTICATION_BACKENDS = [
+    'dbr.backends.CustomAuthBackend', # Our custom backend first
+    'django.contrib.auth.backends.ModelBackend', # Django's default as a fallback
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/

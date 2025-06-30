@@ -1,3 +1,8 @@
+
+
+from dbr.models import BCRBAccount
+
+
 def calculate_dbr_from_json(data):
     gross_salary = data['response']['gross_salary']
     if gross_salary in [None, 0]:
@@ -54,3 +59,40 @@ def calculate_dbr_from_json(data):
 
     decision = "Accepted" if dbr <= limit else "Rejected"
     return dbr_percent, decision
+
+
+def process_dbr_for_report(report):
+    """Rebuild structure from DB and calculate DBR."""
+    accounts = BCRBAccount.objects.filter(report=report)
+    account_detail = [
+        {
+            "account_type": acc.account_type,
+            "account_position": acc.account_position,
+            "payment_amount": acc.payment_amount,
+            "payment_frequency": acc.payment_frequency,
+            "finance_amount_or_credit_limit": acc.finance_amount_or_credit_limit,
+            "outstanding_balance": acc.outstanding_balance,
+            "relation_to_account": acc.relation_to_account,
+        }
+        for acc in accounts
+    ]
+
+    structured_input = {
+        "reportId": report.report_id,
+        "uid": report.uid,
+        "response": {
+            "gross_salary": report.gross_salary,
+            "bcrb": {
+                "accounts": {
+                    "account_detail": account_detail
+                }
+            }
+        }
+    }
+
+    dbr_percent, decision = calculate_dbr_from_json(structured_input)
+    report.dbr_percent = dbr_percent
+    report.decision = decision
+    report.save()
+
+    return {"DBR %": dbr_percent, "Decision": decision}
