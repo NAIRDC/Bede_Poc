@@ -69,7 +69,7 @@
         </button>
     </div>
 
-    <aside id="sidebar" class="w-64 bg-white border-r border-slate-200 flex flex-col flex-shrink-0 fixed inset-y-0 left-0 z-30 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-200 ease-in-out">
+    <aside id="sidebar" class="w-64 bg-white border-r border-slate-200 flex flex-col flex-shrink-0 fixed inset-y-0 left-0 z-30 transform -translate-x-full md:translate-x-0 transition-transform duration-200 ease-in-out h-screen">
         <div class="flex flex-col flex-grow">
             <div class="h-20 flex items-center justify-center border-b border-slate-200 flex-shrink-0">
                 <img src="{% static 'images/Bede_logo.png' %}" alt="Logo" class="h-16">
@@ -102,7 +102,7 @@
         </div>
     </aside>
 
-    <main id="upload-page" class="flex-1 p-6 lg:p-10 overflow-y-auto">
+    <main id="upload-page" class="flex-1 p-6 lg:p-10 overflow-y-auto md:ml-64">
         <header>
             <h1 class="font-heading text-3xl font-bold text-slate-800">Process New Files</h1>
             <p class="mt-1 text-slate-500">Upload one or more JSON files to check DBR and view account details.</p>
@@ -246,32 +246,41 @@ function renderFileList(){
 }
 
 /* --------------------- submission ---------------------------- */
-processBtn.addEventListener("click",async()=>{
-  if(!uploadedFiles.length) return;
-  processBtn.disabled=true;
-  processBtn.innerHTML=`<svg class="animate-spin h-5 w-5 text-white mr-2 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Processing…`;
+processBtn.addEventListener("click", async () => {
+    if (!uploadedFiles.length) return;
+    processBtn.disabled = true;
+    processBtn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white mr-2 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Processing…`;
 
-  const fd=new FormData();
-  uploadedFiles.forEach(f=>fd.append("files",f));
-  const res=await fetch("{% url 'upload_json' %}",{
-    method:"POST",
-    headers:{"X-CSRFToken":getCookie("csrftoken")},
-    body:fd
-  });
-  const data=await res.json();
-  resultsContainer.innerHTML="";
+    const fd = new FormData();
+    uploadedFiles.forEach(f => fd.append("files", f));
 
-  // Render successful results
-  (data.results||[]).forEach(renderCard);
-  
-  // Render errors, if any
-  (data.errors||[]).forEach(renderErrorCard);
+    const res = await fetch("{% url 'upload_json' %}", {
+        method: "POST",
+        headers: { "X-CSRFToken": getCookie("csrftoken") },
+        body: fd
+    });
 
-  resultsSection.classList.remove("hidden");
-  uploadedFiles=[];
-  renderFileList();
-  processBtn.disabled=false;
-  processBtn.textContent="Process Files";
+    // NEW: Check if the request was redirected due to session expiration.
+    if (res.redirected) {
+        alert('Your session has expired. You will be redirected to the login page.');
+        window.location.href = "{% url 'login' %}";
+        return; // Stop execution of the rest of the function.
+    }
+
+    const data = await res.json();
+    resultsContainer.innerHTML = "";
+
+    // Render successful results
+    (data.results || []).forEach(renderCard);
+
+    // Render errors, if any
+    (data.errors || []).forEach(renderErrorCard);
+
+    resultsSection.classList.remove("hidden");
+    uploadedFiles = [];
+    renderFileList();
+    processBtn.disabled = false;
+    processBtn.textContent = "Process Files";
 });
 
 function statusBadge(status){
@@ -340,13 +349,13 @@ function renderCard(d){
         </div>
 
         <div>
-          <h4 class="font-semibold text-slate-700 mb-2">DSR Details</h4>
+          <h4 class="font-semibold text-slate-700 mb-2">DBR Details</h4>
           <div class="space-y-2 text-sm">
             <p><strong>Decision:</strong>
                 <span class="font-bold px-2 py-0.5 rounded ${decBg} ${decColor}">
                     ${d.decision}
                 </span></p>
-            <p><strong>DBR %:</strong> ${(d.dbr_percent*100).toFixed(1)}%</p>
+            <p><strong>DBR %:</strong> ${d.dbr_percent}</p>
             <p><strong>Score:</strong> ${d.score ?? "N/A"}</p>
             <p><strong>Gross Salary:</strong>
                 ${Number(d.gross_salary).toLocaleString("en-US",{minimumFractionDigits:2})}
